@@ -17,15 +17,16 @@ crveniCrta = True
 x = -1
 y = 0
 
+r = 50
+
 poslednjiPotez = (0,0)
 # boja, kolona, mesto u koloni, novo mesto
 animacijaPotez = (0,0,0,0)
 
-crtajX = 0
-r = 50
+
+
 
 def crtaj():
-    global crveniCrta
     prozor.fill(pg.Color("white"))
     crtajPolja()
     crtajAnimaciju()
@@ -57,6 +58,7 @@ def obradiDogadjaj(dogadjaj):
         (x,y) = dogadjaj.pos
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         polja[mestoUKoloni][kolona] = boja
+        print(str(boja) + str(proveriIgru()))
         kolona = proveriKolonu()
         
         for i in range(5, -1, -1):
@@ -67,7 +69,7 @@ def obradiDogadjaj(dogadjaj):
                 crveniCrta = not crveniCrta
                 poslednjiPotez = (i, kolona)
                 break
-        # print(str(proveriIgru()))
+        
         return True
     # otkucaj tajmera
     if dogadjaj.type == pg.USEREVENT:
@@ -75,6 +77,7 @@ def obradiDogadjaj(dogadjaj):
         if(pomeraj == mestoUKoloni * 100 + r):
             pg.time.set_timer(pg.USEREVENT, 0)
             polja[mestoUKoloni][kolona] = boja
+            print(str(proveriIgru()))
             boja = 0
             return True
         animacijaPotez = (boja, kolona, mestoUKoloni, pomeraj + 25)
@@ -82,14 +85,15 @@ def obradiDogadjaj(dogadjaj):
         
         return True
     
-
+    
     return False    
 
 def proveriIgru():
     global poslednjiPotez, polja
-
     (a, b) = poslednjiPotez
     boja = polja[a][b]
+    if boja == 0:
+        return False
     # 4 vertikalna
     
     brojIstih = 0
@@ -121,31 +125,51 @@ def proveriIgru():
         return True  
 
     # diagonalno 
-    brojIstih = 0
+    brojIstih = 1
     # gore desno
-    x = a
-    y = b
+    x = a-1
+    y = b+1
 
-    
     while((not (x < 0 or y > 6)) and polja[x][y] == boja):
         brojIstih += 1
         x -= 1
         y += 1
-        if brojIstih >= 4:
-            return True
-
-    x = a
-    y = b        
+        
+    x = a+1
+    y = b-1        
     # dole levo
 
-    while((not (x > 5 or y <0)) and polja[x][y] == boja):
+    while((not (x > 5 or y < 0)) and polja[x][y] == boja):
         brojIstih += 1
         x += 1
         y -= 1
         # print("dole levo")
-        if brojIstih >= 5:
-            return True
+    if brojIstih >=4:
+        return True
 
+    # gore levo
+    brojIstih = 1
+
+    x = a - 1
+    y = b - 1
+    while ((not (x < 0 or y < 0)) and (polja[x][y] == boja)):
+        brojIstih += 1
+        x -= 1
+        y -= 1
+    if brojIstih >= 4:
+        return True    
+
+    # dole desno
+    
+    x = a + 1
+    y = b + 1
+    while ((not (x > 5 or y < 6)) and (polja[x][y] == boja)):
+        brojIstih += 1
+        x += 1
+        y += 1
+    if brojIstih >= 5:
+        return True    
+    
     return False                   
 
 def proveriKolonu(): 
