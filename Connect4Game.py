@@ -5,13 +5,13 @@ import pygamebg
 prozor = pygamebg.open_window(sirina, visina, "Connect4")
 prozor.fill(pg.Color("white"))
 
-polja = [[0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0]]
+igraGotova = False
 
+def matricaNula():
+    return [([0]*7) for i in range(6)]
+
+
+polja = matricaNula()
 crveniCrta = True
 
 x = -1
@@ -23,14 +23,31 @@ poslednjiPotez = (0,0)
 # boja, kolona, mesto u koloni, novo mesto
 animacijaPotez = (0,0,0,0)
 
-
-
-
 def crtaj():
+    global sirina, visina, igraGotova, animacijaPotez
     prozor.fill(pg.Color("white"))
-    crtajPolja()
-    crtajAnimaciju()
+    (boja, s,s,s) = animacijaPotez
+    if igraGotova :
+        prozor.fill(pg.Color("black"))
 
+        font = pg.font.SysFont("Arial", 20)
+        tekst = font.render("Igra gotova", True, pg.Color("white"))
+        tekstRect = tekst.get_rect(center = (sirina // 2, visina // 2))
+        prozor.blit(tekst, tekstRect)
+
+        tekst = font.render("Zuti je pobedio" if boja == 2 else "Crveni je pobedio", True, pg.Color("white"))
+        tekstRect = tekst.get_rect(center = (sirina // 2, visina // 2 + 25))
+        prozor.blit(tekst, tekstRect)
+        
+        animacijaPotez = (0,0,0,0)
+        
+        
+    else:
+        crtajPolja()
+        crtajAnimaciju()
+
+
+# crtanje svih polja iz matrice polja
 def crtajPolja():
     global polja, animacijaPotez
     for i in range(len(polja)):
@@ -43,22 +60,31 @@ def crtajPolja():
                 # pg.draw.rect(prozor, pg.Color("yellow"), ((j+1)*100 - 100, (i+1)*100 - 100, 100,100))
                 pg.draw.circle(prozor, pg.Color("yellow"), ((j+1)*100 - 100 + r,(i+1) * 100 - 100 + r), r)
 
+
+# crtanje trenutnog padajuceg kruga
 def crtajAnimaciju():
     global animacijaPotez, r
     (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
     if(boja == 1):
         pg.draw.circle(prozor, pg.Color("red"), ((kolona) * 100 + r, pomeraj), r)
+        return
     if(boja == 2):
         pg.draw.circle(prozor, pg.Color("yellow"), ((kolona) * 100 + r, pomeraj), r)
 
 
 def obradiDogadjaj(dogadjaj):
-    global crveniCrta, x, y, poslednjiPotez, animacijaPotez, r, polja
+    global crveniCrta, x, y, poslednjiPotez, animacijaPotez, r, polja, igraGotova
+
     if(dogadjaj.type == pg.MOUSEBUTTONDOWN):
+        if(igraGotova):
+            igraGotova = not igraGotova
+            polja = matricaNula()
+            crveniCrta = True
+            return True
         (x,y) = dogadjaj.pos
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         polja[mestoUKoloni][kolona] = boja
-        print(str(boja) + str(proveriIgru()))
+        igraGotova = proveriIgru()
         kolona = proveriKolonu()
         
         for i in range(5, -1, -1):
@@ -77,7 +103,7 @@ def obradiDogadjaj(dogadjaj):
         if(pomeraj == mestoUKoloni * 100 + r):
             pg.time.set_timer(pg.USEREVENT, 0)
             polja[mestoUKoloni][kolona] = boja
-            print(str(proveriIgru()))
+            igraGotova = proveriIgru()
             boja = 0
             return True
         animacijaPotez = (boja, kolona, mestoUKoloni, pomeraj + 25)
@@ -163,15 +189,16 @@ def proveriIgru():
     
     x = a + 1
     y = b + 1
-    while ((not (x > 5 or y < 6)) and (polja[x][y] == boja)):
+    while ((not (x > 5 or y > 6)) and (polja[x][y] == boja)):
         brojIstih += 1
         x += 1
         y += 1
-    if brojIstih >= 5:
+    if brojIstih >= 4:
         return True    
-    
-    return False                   
 
+    return False    
+
+# vraca index kolone na osnovu pozicije misa na ekranu
 def proveriKolonu(): 
     global x
 
