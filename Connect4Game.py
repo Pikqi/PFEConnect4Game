@@ -43,9 +43,13 @@ def crtaj():
         
         
     else:
+        crtajKolone()
         crtajPolja()
         crtajAnimaciju()
 
+def crtajKolone():
+    for i in range(1, 7):
+        pg.draw.line(prozor, pg.Color("black"), (i * 100, 0), (i * 100, visina), 3)
 
 # crtanje svih polja iz matrice polja
 def crtajPolja():
