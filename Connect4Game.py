@@ -5,27 +5,39 @@ import pygamebg
 prozor = pygamebg.open_window(sirina, visina, "Connect4")
 prozor.fill(pg.Color("white"))
 
+crvena = 1
+zuta = 2
+
+crveniCrta = True
 igraGotova = False
+mis_x = -1
+y = 0
+# poluprecnik kruga
+r = 50
 
 def matricaNula():
     return [([0]*7) for i in range(6)]
 
 
 polja = matricaNula()
-crveniCrta = True
-
-x = -1
-y = 0
-
-r = 50
 
 poslednjiPotez = (0,0)
 # boja, kolona, mesto u koloni, novo mesto
 animacijaPotez = (0,0,0,0)
 
 def crtaj():
-    global sirina, visina, igraGotova, animacijaPotez
     prozor.fill(pg.Color("white"))
+    
+    if igraGotova :
+        crtajGotovaIgra()
+    else:
+        crtajKolone()
+        crtajPolja()
+        crtajAnimaciju()
+
+
+def crtajGotovaIgra():
+    global sirina, visina, igraGotova, animacijaPotez
     (boja, s,s,s) = animacijaPotez
     if igraGotova :
         prozor.fill(pg.Color("black"))
@@ -40,12 +52,6 @@ def crtaj():
         prozor.blit(tekst, tekstRect)
         
         animacijaPotez = (0,0,0,0)
-        
-        
-    else:
-        crtajKolone()
-        crtajPolja()
-        crtajAnimaciju()
 
 def crtajKolone():
     for i in range(1, 7):
@@ -54,14 +60,12 @@ def crtajKolone():
 # crtanje svih polja iz matrice polja
 def crtajPolja():
     global polja, animacijaPotez
+
     for i in range(len(polja)):
         for j in range(len(polja[i])):
             if polja[i][j] == 1:
-                # pg.draw.rect(prozor, pg.Color("red"), ((j+1)*100 - 100 , (i+1) * 100 - 100, 100,100))
                 pg.draw.circle(prozor, pg.Color("red"), ((j+1)*100 - 100 + r,(i+1) * 100 - 100 + r), r)
-
             elif polja[i][j] == 2:
-                # pg.draw.rect(prozor, pg.Color("yellow"), ((j+1)*100 - 100, (i+1)*100 - 100, 100,100))
                 pg.draw.circle(prozor, pg.Color("yellow"), ((j+1)*100 - 100 + r,(i+1) * 100 - 100 + r), r)
 
 
@@ -69,15 +73,15 @@ def crtajPolja():
 def crtajAnimaciju():
     global animacijaPotez, r
     (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
-    if(boja == 1):
+    if(boja == crvena):
         pg.draw.circle(prozor, pg.Color("red"), ((kolona) * 100 + r, pomeraj), r)
         return
-    if(boja == 2):
+    if(boja == zuta):
         pg.draw.circle(prozor, pg.Color("yellow"), ((kolona) * 100 + r, pomeraj), r)
 
 
 def obradiDogadjaj(dogadjaj):
-    global crveniCrta, x, y, poslednjiPotez, animacijaPotez, r, polja, igraGotova
+    global crveniCrta, mis_x, y, poslednjiPotez, animacijaPotez, r, polja, igraGotova
 
     if(dogadjaj.type == pg.MOUSEBUTTONDOWN):
         if(igraGotova):
@@ -85,7 +89,8 @@ def obradiDogadjaj(dogadjaj):
             polja = matricaNula()
             crveniCrta = True
             return True
-        (x,y) = dogadjaj.pos
+
+        (mis_x,y) = dogadjaj.pos
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         polja[mestoUKoloni][kolona] = boja
         igraGotova = proveriIgru()
@@ -94,7 +99,7 @@ def obradiDogadjaj(dogadjaj):
         for i in range(5, -1, -1):
             if polja[i][kolona] == 0:
                 # polja[i][kolona] = 1 if crveniCrta else 2
-                animacijaPotez = (1 if crveniCrta else 2, kolona, i, r)
+                animacijaPotez = (crvena if crveniCrta else zuta, kolona, i, r)
                 pg.time.set_timer(pg.USEREVENT, 50)
                 crveniCrta = not crveniCrta
                 poslednjiPotez = (i, kolona)
@@ -114,7 +119,6 @@ def obradiDogadjaj(dogadjaj):
         # crtajAnimaciju()
         
         return True
-    
     
     return False    
 
@@ -164,7 +168,7 @@ def proveriIgru():
         brojIstih += 1
         x -= 1
         y += 1
-        
+
     x = a+1
     y = b-1        
     # dole levo
@@ -204,22 +208,11 @@ def proveriIgru():
 
 # vraca index kolone na osnovu pozicije misa na ekranu
 def proveriKolonu(): 
-    global x
+    global mis_x
 
-    if(x < 100):
-        return 0
-    if(x < 200):
-        return 1
-    if(x < 300):
-        return 2    
-    if(x < 400):
-        return 3
-    if(x < 500):
-        return 4
-    if(x < 600):
-        return 5
-    if(x < 700):
-        return 6 
+    for i in range(7):
+        if mis_x < (i+1) *  100:
+            return i
     return False
 
 pygamebg.event_loop(crtaj, obradiDogadjaj)
