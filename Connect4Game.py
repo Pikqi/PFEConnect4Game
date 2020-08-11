@@ -1,6 +1,6 @@
 import pygame as pg
 import pygamebg
-
+import random
 (sirina, visina) = (700, 600)
 prozor = pygamebg.open_window(sirina, visina, "Connect4")
 prozor.fill(pg.Color("white"))
@@ -8,8 +8,11 @@ prozor.fill(pg.Color("white"))
 crvena = 1
 zuta = 2
 
+pobedioJe = 0
 crveniCrta = True
 igraGotova = False
+animacijaUToku = False
+nacinIgre = 2 # 0 = nije izabrano 1 = igrac protiv igraca 2 = igrac protiv racunara
 mis_x = -1
 y = 0
 # poluprecnik kruga
@@ -27,27 +30,43 @@ animacijaPotez = (0,0,0,0)
 
 def crtaj():
     prozor.fill(pg.Color("white"))
-    
-    if igraGotova :
-        crtajGotovaIgra()
-    else:
-        crtajKolone()
-        crtajPolja()
-        crtajAnimaciju()
 
+    # if nacinIgre == 0:
+    #     crtajBirajMod()
+
+
+   
+    
+    crtajKolone()
+    crtajPolja()
+    crtajAnimaciju()
+    if igraGotova:
+        crtajGotovaIgra()
+
+def crtajBirajMod():
+    global nacinIgre
+    prozor.fill(pg.Color("white"))
+    # pg.draw.rect(prozor, pg.Color("white"), ((sirina/2 -200, visina / 2 - 200), (400, 150))) #400 * 150
+
+    font = pg.font.SysFont("Arial", 20)
+    tekst = font.render("Igrac protiv igraca", True, pg.Color("black"))
+    tekstRect = tekst.get_rect(center = ((sirina/2 -200, visina / 2 - 200)))
+
+    # pg.draw.rect(prozor, pg.Color("white"), ((sirina/2 -200, visina / 2 ), (400, 150)))
+    
 
 def crtajGotovaIgra():
     global sirina, visina, igraGotova, animacijaPotez
     (boja, s,s,s) = animacijaPotez
     if igraGotova :
-        prozor.fill(pg.Color("black"))
+        # prozor.fill(pg.Color("black"))
 
-        font = pg.font.SysFont("Arial", 20)
-        tekst = font.render("Igra gotova", True, pg.Color("white"))
+        font = pg.font.SysFont("Arial", 40)
+        tekst = font.render("Igra gotova", True, pg.Color("blue"))
         tekstRect = tekst.get_rect(center = (sirina // 2, visina // 2))
         prozor.blit(tekst, tekstRect)
 
-        tekst = font.render("Zuti je pobedio" if boja == 2 else "Crveni je pobedio", True, pg.Color("white"))
+        tekst = font.render("Zuti je pobedio" if pobedioJe == 2 else "Crveni je pobedio", True, pg.Color("blue"))
         tekstRect = tekst.get_rect(center = (sirina // 2, visina // 2 + 25))
         prozor.blit(tekst, tekstRect)
         
@@ -81,9 +100,9 @@ def crtajAnimaciju():
 
 
 def obradiDogadjaj(dogadjaj):
-    global crveniCrta, mis_x, y, poslednjiPotez, animacijaPotez, r, polja, igraGotova
+    global crveniCrta, mis_x, y, poslednjiPotez, animacijaPotez, r, polja, igraGotova, animacijaUToku
 
-    if(dogadjaj.type == pg.MOUSEBUTTONDOWN):
+    if(dogadjaj.type == pg.MOUSEBUTTONDOWN and not animacijaUToku):
         if(igraGotova):
             igraGotova = not igraGotova
             polja = matricaNula()
@@ -101,7 +120,8 @@ def obradiDogadjaj(dogadjaj):
                 # polja[i][kolona] = 1 if crveniCrta else 2
                 animacijaPotez = (crvena if crveniCrta else zuta, kolona, i, r)
                 pg.time.set_timer(pg.USEREVENT, 50)
-                crveniCrta = not crveniCrta
+                animacijaUToku = True
+                # crveniCrta = not crveniCrta
                 poslednjiPotez = (i, kolona)
                 break
         
@@ -111,9 +131,14 @@ def obradiDogadjaj(dogadjaj):
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         if(pomeraj == mestoUKoloni * 100 + r):
             pg.time.set_timer(pg.USEREVENT, 0)
+            animacijaUToku = False
             polja[mestoUKoloni][kolona] = boja
-            igraGotova = proveriIgru()
             boja = 0
+            if proveriIgru():
+                igraGotova = True
+                return True
+            igrajSledeciPotez()
+            igraGotova = proveriIgru()
             return True
         animacijaPotez = (boja, kolona, mestoUKoloni, pomeraj + 25)
         # crtajAnimaciju()
@@ -122,8 +147,22 @@ def obradiDogadjaj(dogadjaj):
     
     return False    
 
+def igrajSledeciPotez():
+    global polja, poslednjiPotez
+    
+    while True:
+        mesto = random.randint(0, 6)
+        y = nadjiSlobodnoY(mesto, polja)
+
+        if y < 6:
+            break
+        
+    polja[y][mesto] = zuta
+    poslednjiPotez = (y, mesto)
+    
+    
 def proveriIgru():
-    global poslednjiPotez, polja
+    global poslednjiPotez, polja, pobedioJe
     (a, b) = poslednjiPotez
     boja = polja[a][b]
     if boja == 0:
@@ -138,6 +177,7 @@ def proveriIgru():
         else:
             break
     if brojIstih >= 4:
+        pobedioJe = boja
         return True
     # 4 horizontalna
     # levo
@@ -155,7 +195,8 @@ def proveriIgru():
         else:
             break
 
-    if brojIstih == 5:
+    if brojIstih >= 5:
+        pobedioJe = boja
         return True  
 
     # diagonalno 
@@ -179,6 +220,7 @@ def proveriIgru():
         y -= 1
         # print("dole levo")
     if brojIstih >=4:
+        pobedioJe = boja
         return True
 
     # gore levo
@@ -191,6 +233,7 @@ def proveriIgru():
         x -= 1
         y -= 1
     if brojIstih >= 4:
+        pobedioJe = boja
         return True    
 
     # dole desno
@@ -202,6 +245,7 @@ def proveriIgru():
         x += 1
         y += 1
     if brojIstih >= 4:
+        pobedioJe = boja
         return True    
 
     return False    
@@ -215,4 +259,10 @@ def proveriKolonu():
             return i
     return False
 
+def nadjiSlobodnoY (x, polja):
+    for i in range(5, 0, -1):
+        if polja[i][x] == 0:
+            return i
+    return 6
+    
 pygamebg.event_loop(crtaj, obradiDogadjaj)
