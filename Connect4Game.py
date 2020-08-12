@@ -140,7 +140,7 @@ def obradiDogadjaj(dogadjaj):
                 igraGotova = True
                 return True
             igrajSledeciPotez()
-            igraGotova = nadjiScore(poslednjiPotez,polja) >= 4
+            igraGotova = nadjiScore(poslednjiPotez, polja) >= 4
             return True
         animacijaPotez = (boja, kolona, mestoUKoloni, pomeraj + 25)
         # crtajAnimaciju()
@@ -152,22 +152,30 @@ def obradiDogadjaj(dogadjaj):
 def igrajSledeciPotez():
     global polja, poslednjiPotez
     
-    while True:
-        mesto = random.randint(0, 6)
-        y = nadjiSlobodnoY(mesto, polja)
+    # while True:
+    #     mesto = random.randint(0, 6)
+    #     y = nadjiSlobodnoY(mesto, polja)
 
-        if y < 6:
-            break
+    #     if y < 6:
+    #         break
         
-    polja[y][mesto] = zuta
-    poslednjiPotez = (y, mesto)
+    # polja[y][mesto] = zuta
+    # poslednjiPotez = (y, mesto)
+
+    noviPotez =  minimax(polja, 1, True, poslednjiPotez)[1]
+
+    (a, b) = noviPotez
+
+    polja[a][b] = zuta
+    poslednjiPotez = (a, b)
     
     
 def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
     if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 4:
-        return
+        return [nadjiScore(poslednjiPotez1, polja1), poslednjiPotez1]
 
     if isMaximizing:
+        najboljiPotez = (0,0)
         score = -math.inf
         for i in range(0, 7):
             y = nadjiSlobodnoY(i, polja1)
@@ -175,9 +183,15 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
                 continue
             else:
                 polja2 = np.copy(polja1)
-                polaj2[y][i] = 2
-                score = max(score, minimax(polja2, depth - 1, not isMaximizing))
-        return score
+                polja2[y][i] = zuta
+                poslednjiPotez1 = (y, i)
+                newScore = minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
+                if newScore > score:
+                    najboljiPotez = (y, i)
+                    score = newScore
+                # score = max(score, minimax(polja2, depth - 1, not isMaximizing, poslednjiPotez1)[0])
+
+        return [score, najboljiPotez]
     if not isMaximizing:
         score = math.inf
         for i in range(0, 7):
@@ -186,9 +200,10 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
                 continue
             else:
                 polja2 = np.copy(polja1)
-                polaj2[y][i] = 1 
-                score = max(score, minimax(polja2, depth - 1, not isMaximizing))            
-        return score
+                polja2[y][i] = crvena 
+                poslednjiPotez1 = (y, i)
+                score = max(score, minimax(polja2, depth - 1, not isMaximizing, poslednjiPotez1))            
+        return [score, poslednjiPotez1]
 def nadjiScore(poslednjiPotez, polja):
     # global poslednjiPotez, polja, pobedioJe
     global pobedioJe
