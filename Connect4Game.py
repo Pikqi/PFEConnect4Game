@@ -69,7 +69,7 @@ def crtajGotovaIgra():
         prozor.blit(tekst, tekstRect)
 
         tekst = font.render("Zuti je pobedio" if pobedioJe == 2 else "Crveni je pobedio", True, pg.Color("blue"))
-        tekstRect = tekst.get_rect(center = (sirina // 2, visina // 2 + 25))
+        tekstRect = tekst.get_rect(center = (sirina // 2, visina // 2 + 50))
         prozor.blit(tekst, tekstRect)
         
         animacijaPotez = (0,0,0,0)
@@ -114,7 +114,7 @@ def obradiDogadjaj(dogadjaj):
         (mis_x,y) = dogadjaj.pos
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         polja[mestoUKoloni][kolona] = boja
-        igraGotova = proveriIgru()
+        igraGotova = nadjiScore(poslednjiPotez, polja) >= 4
         kolona = proveriKolonu()
         
         for i in range(5, -1, -1):
@@ -136,11 +136,11 @@ def obradiDogadjaj(dogadjaj):
             animacijaUToku = False
             polja[mestoUKoloni][kolona] = boja
             boja = 0
-            if proveriIgru():
+            if nadjiScore(poslednjiPotez, polja) >= 4:
                 igraGotova = True
                 return True
             igrajSledeciPotez()
-            igraGotova = proveriIgru()
+            igraGotova = nadjiScore(poslednjiPotez,polja) >= 4
             return True
         animacijaPotez = (boja, kolona, mestoUKoloni, pomeraj + 25)
         # crtajAnimaciju()
@@ -163,8 +163,8 @@ def igrajSledeciPotez():
     poslednjiPotez = (y, mesto)
     
     
-def minimax(polja1, depth, isMaximizing):
-    if depth == 0 or proveriIgru(polja1):
+def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
+    if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 4:
         return
 
     if isMaximizing:
@@ -178,7 +178,7 @@ def minimax(polja1, depth, isMaximizing):
                 polaj2[y][i] = 2
                 score = max(score, minimax(polja2, depth - 1, not isMaximizing))
         return score
-      if not isMaximizing:
+    if not isMaximizing:
         score = math.inf
         for i in range(0, 7):
             y = nadjiSlobodnoY(i, polja1)
@@ -189,8 +189,11 @@ def minimax(polja1, depth, isMaximizing):
                 polaj2[y][i] = 1 
                 score = max(score, minimax(polja2, depth - 1, not isMaximizing))            
         return score
-def proveriIgru():
-    global poslednjiPotez, polja, pobedioJe
+def nadjiScore(poslednjiPotez, polja):
+    # global poslednjiPotez, polja, pobedioJe
+    global pobedioJe
+    score = -math.inf
+
     (a, b) = poslednjiPotez
     boja = polja[a][b]
     if boja == 0:
@@ -204,12 +207,14 @@ def proveriIgru():
             
         else:
             break
-    if brojIstih >= 4:
-        pobedioJe = boja
-        return True
+    # if brojIstih >= 4:
+    #     pobedioJe = boja
+    #     # return True
+    score = max(score, brojIstih)    
+
     # 4 horizontalna
     # levo
-    brojIstih = 0
+    brojIstih = -1
     for i in range(b, -1, -1):
         if polja[a][i] == boja:
             brojIstih += 1
@@ -223,9 +228,11 @@ def proveriIgru():
         else:
             break
 
-    if brojIstih >= 5:
-        pobedioJe = boja
-        return True  
+    # if brojIstih >= 5:
+    #     pobedioJe = boja
+    #     return True  
+
+    score = max(score, brojIstih)
 
     # diagonalno 
     brojIstih = 1
@@ -247,10 +254,10 @@ def proveriIgru():
         x += 1
         y -= 1
         # print("dole levo")
-    if brojIstih >=4:
-        pobedioJe = boja
-        return True
-
+    # if brojIstih >=4:
+        #  pobedioJe = boja
+    #     return True
+    score = max(score, brojIstih)
     # gore levo
     brojIstih = 1
 
@@ -260,10 +267,10 @@ def proveriIgru():
         brojIstih += 1
         x -= 1
         y -= 1
-    if brojIstih >= 4:
-        pobedioJe = boja
-        return True    
-
+    # if brojIstih >= 4:
+    #     pobedioJe = boja
+    #     return True    
+    score = max(score, brojIstih)
     # dole desno
     
     x = a + 1
@@ -272,11 +279,13 @@ def proveriIgru():
         brojIstih += 1
         x += 1
         y += 1
-    if brojIstih >= 4:
+    # if brojIstih >= 4:
+    #     pobedioJe = boja
+    #     return True    
+    score = max(score, brojIstih)
+    if score >= 4:
         pobedioJe = boja
-        return True    
-
-    return False    
+    return score    
 
 # vraca index kolone na osnovu pozicije misa na ekranu
 def proveriKolonu(): 
