@@ -1,6 +1,8 @@
 import pygame as pg
 import pygamebg
 import random
+import numpy as np
+import math
 (sirina, visina) = (700, 600)
 prozor = pygamebg.open_window(sirina, visina, "Connect4")
 prozor.fill(pg.Color("white"))
@@ -161,6 +163,32 @@ def igrajSledeciPotez():
     poslednjiPotez = (y, mesto)
     
     
+def minimax(polja1, depth, isMaximizing):
+    if depth == 0 or proveriIgru(polja1):
+        return
+
+    if isMaximizing:
+        score = -math.inf
+        for i in range(0, 7):
+            y = nadjiSlobodnoY(i, polja1)
+            if y >=6:
+                continue
+            else:
+                polja2 = np.copy(polja1)
+                polaj2[y][i] = 2
+                score = max(score, minimax(polja2, depth - 1, not isMaximizing))
+        return score
+      if not isMaximizing:
+        score = math.inf
+        for i in range(0, 7):
+            y = nadjiSlobodnoY(i, polja1)
+            if y >=6:
+                continue
+            else:
+                polja2 = np.copy(polja1)
+                polaj2[y][i] = 1 
+                score = max(score, minimax(polja2, depth - 1, not isMaximizing))            
+        return score
 def proveriIgru():
     global poslednjiPotez, polja, pobedioJe
     (a, b) = poslednjiPotez
