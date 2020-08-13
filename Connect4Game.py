@@ -10,6 +10,7 @@ prozor.fill(pg.Color("white"))
 crvena = 1
 zuta = 2
 
+najboljiPotezIScore = 0
 pobedioJe = 0
 crveniCrta = True
 igraGotova = False
@@ -162,7 +163,7 @@ def igrajSledeciPotez():
     # polja[y][mesto] = zuta
     # poslednjiPotez = (y, mesto)
 
-    noviPotez =  minimax(polja, 1, True, poslednjiPotez)[1]
+    noviPotez =  minimax(polja, 2, True, poslednjiPotez)[1]
 
     (a, b) = noviPotez
 
@@ -171,6 +172,7 @@ def igrajSledeciPotez():
     
     
 def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
+    global najboljiPotezIScore
     if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 4:
         return [nadjiScore(poslednjiPotez1, polja1), poslednjiPotez1]
 
@@ -193,6 +195,7 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
 
         return [score, najboljiPotez]
     if not isMaximizing:
+        najboljiPotez = (0,0)
         score = math.inf
         for i in range(0, 7):
             y = nadjiSlobodnoY(i, polja1)
@@ -202,13 +205,17 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
                 polja2 = np.copy(polja1)
                 polja2[y][i] = crvena 
                 poslednjiPotez1 = (y, i)
-                score = max(score, minimax(polja2, depth - 1, not isMaximizing, poslednjiPotez1))            
+                newScore = minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
+                if newScore < score:
+                    najboljiPotez = (y, i)
+                    score = newScore            
         return [score, poslednjiPotez1]
 def nadjiScore(poslednjiPotez, polja):
     # global poslednjiPotez, polja, pobedioJe
     global pobedioJe
     score = -math.inf
 
+    pobedioJe = 0
     (a, b) = poslednjiPotez
     boja = polja[a][b]
     if boja == 0:
