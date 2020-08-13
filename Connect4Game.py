@@ -115,7 +115,7 @@ def obradiDogadjaj(dogadjaj):
         (mis_x,y) = dogadjaj.pos
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         polja[mestoUKoloni][kolona] = boja
-        igraGotova = nadjiScore(poslednjiPotez, polja) >= 4
+        igraGotova = nadjiScore(poslednjiPotez, polja) >= 100
         kolona = proveriKolonu()
         
         for i in range(5, -1, -1):
@@ -137,11 +137,11 @@ def obradiDogadjaj(dogadjaj):
             animacijaUToku = False
             polja[mestoUKoloni][kolona] = boja
             boja = 0
-            if nadjiScore(poslednjiPotez, polja) >= 4:
+            if nadjiScore(poslednjiPotez, polja) >= 100:
                 igraGotova = True
                 return True
             igrajSledeciPotez()
-            igraGotova = nadjiScore(poslednjiPotez, polja) >= 4
+            igraGotova = nadjiScore(poslednjiPotez, polja) >= 100
             return True
         animacijaPotez = (boja, kolona, mestoUKoloni, pomeraj + 25)
         # crtajAnimaciju()
@@ -163,7 +163,7 @@ def igrajSledeciPotez():
     # polja[y][mesto] = zuta
     # poslednjiPotez = (y, mesto)
 
-    noviPotez =  minimax(polja, 2, True, poslednjiPotez)[1]
+    noviPotez =  minimax(polja, 1, True, poslednjiPotez)[1]
 
     (a, b) = noviPotez
 
@@ -173,7 +173,7 @@ def igrajSledeciPotez():
     
 def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
     global najboljiPotezIScore
-    if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 4:
+    if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 100:
         return [nadjiScore(poslednjiPotez1, polja1), poslednjiPotez1]
 
     if isMaximizing:
@@ -213,7 +213,7 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
 def nadjiScore(poslednjiPotez, polja):
     # global poslednjiPotez, polja, pobedioJe
     global pobedioJe
-    score = -math.inf
+    score = 0
 
     pobedioJe = 0
     (a, b) = poslednjiPotez
@@ -232,7 +232,7 @@ def nadjiScore(poslednjiPotez, polja):
     # if brojIstih >= 4:
     #     pobedioJe = boja
     #     # return True
-    score = max(score, brojIstih)    
+    score += brojIstihKriterijum(brojIstih)  
 
     # 4 horizontalna
     # levo
@@ -254,7 +254,7 @@ def nadjiScore(poslednjiPotez, polja):
     #     pobedioJe = boja
     #     return True  
 
-    score = max(score, brojIstih)
+    score += brojIstihKriterijum(brojIstih)  
 
     # diagonalno 
     brojIstih = 1
@@ -279,7 +279,7 @@ def nadjiScore(poslednjiPotez, polja):
     # if brojIstih >=4:
         #  pobedioJe = boja
     #     return True
-    score = max(score, brojIstih)
+    score += brojIstihKriterijum(brojIstih)  
     # gore levo
     brojIstih = 1
 
@@ -292,7 +292,7 @@ def nadjiScore(poslednjiPotez, polja):
     # if brojIstih >= 4:
     #     pobedioJe = boja
     #     return True    
-    score = max(score, brojIstih)
+    score += brojIstihKriterijum(brojIstih)  
     # dole desno
     
     x = a + 1
@@ -304,8 +304,8 @@ def nadjiScore(poslednjiPotez, polja):
     # if brojIstih >= 4:
     #     pobedioJe = boja
     #     return True    
-    score = max(score, brojIstih)
-    if score >= 4:
+    score += brojIstihKriterijum(brojIstih)  
+    if score >= 100:
         pobedioJe = boja
     return score    
 
@@ -317,6 +317,17 @@ def proveriKolonu():
         if mis_x < (i+1) *  100:
             return i
     return False
+
+def brojIstihKriterijum(brojIstih):
+    switch = {
+        0: 0,
+        1: 1,
+        2: 2,
+        3: 5,
+        4: 100
+    }
+
+    return switch.get(brojIstih, 100)
 
 def nadjiSlobodnoY (x, polja):
     for i in range(5, 0, -1):
