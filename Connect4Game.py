@@ -163,7 +163,7 @@ def igrajSledeciPotez():
     # polja[y][mesto] = zuta
     # poslednjiPotez = (y, mesto)
 
-    noviPotez =  minimax(polja, 1, True, poslednjiPotez)[1]
+    noviPotez =  minimax(polja, 2, True, poslednjiPotez)[1]
 
     (a, b) = noviPotez
 
@@ -192,11 +192,12 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
                     najboljiPotez = (y, i)
                     score = newScore
                 # score = max(score, minimax(polja2, depth - 1, not isMaximizing, poslednjiPotez1)[0])
+        najboljiPotezIScore = [score, najboljiPotez]
+        return najboljiPotezIScore
 
-        return [score, najboljiPotez]
     if not isMaximizing:
         najboljiPotez = (0,0)
-        score = math.inf
+        score = -math.inf
         for i in range(0, 7):
             y = nadjiSlobodnoY(i, polja1)
             if y >=6:
@@ -206,9 +207,14 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
                 polja2[y][i] = crvena 
                 poslednjiPotez1 = (y, i)
                 newScore = minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
-                if newScore < score:
+                if newScore > score:
                     najboljiPotez = (y, i)
-                    score = newScore            
+                    score = newScore     
+
+                    if score >= 100:
+                        najboljiPotezIScore = [score, najboljiPotez]
+                        return najboljiPotezIScore
+
         return [score, poslednjiPotez1]
 def nadjiScore(poslednjiPotez, polja):
     # global poslednjiPotez, polja, pobedioJe
@@ -330,7 +336,7 @@ def brojIstihKriterijum(brojIstih):
     return switch.get(brojIstih, 100)
 
 def nadjiSlobodnoY (x, polja):
-    for i in range(5, 0, -1):
+    for i in range(5, -1, -1):
         if polja[i][x] == 0:
             return i
     return 6
