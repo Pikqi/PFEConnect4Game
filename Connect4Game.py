@@ -115,7 +115,7 @@ def obradiDogadjaj(dogadjaj):
         (mis_x,y) = dogadjaj.pos
         (boja, kolona, mestoUKoloni, pomeraj) = animacijaPotez
         polja[mestoUKoloni][kolona] = boja
-        igraGotova = nadjiScore(poslednjiPotez, polja) >= 100
+        igraGotova = nadjiScore(poslednjiPotez, polja) >= 1000
         kolona = proveriKolonu()
         
         for i in range(5, -1, -1):
@@ -137,7 +137,7 @@ def obradiDogadjaj(dogadjaj):
             animacijaUToku = False
             polja[mestoUKoloni][kolona] = boja
             boja = 0
-            if nadjiScore(poslednjiPotez, polja) >= 100:
+            if nadjiScore(poslednjiPotez, polja) >= 1000:
                 igraGotova = True
                 return True
             igrajSledeciPotez()
@@ -162,42 +162,45 @@ def igrajSledeciPotez():
         
     # polja[y][mesto] = zuta
     # poslednjiPotez = (y, mesto)
-
+    najboljiPotezIScore = ((0,0), -math.inf)
     noviPotez =  minimax(polja, 2, True, poslednjiPotez)[1]
+    # noviPotez = najboljiPotez(polja, poslednjiPotez)
 
     (a, b) = noviPotez
-
+    
     polja[a][b] = zuta
     poslednjiPotez = (a, b)
     
-    
+
 def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
-    global najboljiPotezIScore
-    if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 100:
+
+    if depth == 0 or nadjiScore(poslednjiPotez1, polja1) >= 1000:
         return [nadjiScore(poslednjiPotez1, polja1), poslednjiPotez1]
 
     if isMaximizing:
         najboljiPotez = (0,0)
         score = -math.inf
         for i in range(0, 7):
+
             y = nadjiSlobodnoY(i, polja1)
             if y >=6:
                 continue
-            else:
-                polja2 = np.copy(polja1)
-                polja2[y][i] = zuta
-                poslednjiPotez1 = (y, i)
-                newScore = minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
-                if newScore > score:
-                    najboljiPotez = (y, i)
-                    score = newScore
-                # score = max(score, minimax(polja2, depth - 1, not isMaximizing, poslednjiPotez1)[0])
-        najboljiPotezIScore = [score, najboljiPotez]
-        return najboljiPotezIScore
+        
+            polja2 = np.copy(polja1)
+            polja2[y][i] = zuta
+            poslednjiPotez1 = (y, i)
+            newScore = nadjiScore(poslednjiPotez1, polja2)
+            newScore += minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
+            if newScore > score:
+                najboljiPotez = poslednjiPotez1
+                score = newScore
+            # score = max(score, minimax(polja2, depth - 1, not isMaximizing, poslednjiPotez1)[0])
+        print(score)
+        return [score, najboljiPotez]
 
     if not isMaximizing:
         najboljiPotez = (0,0)
-        score = -math.inf
+        score = math.inf
         for i in range(0, 7):
             y = nadjiSlobodnoY(i, polja1)
             if y >=6:
@@ -206,16 +209,15 @@ def minimax(polja1, depth, isMaximizing, poslednjiPotez1):
                 polja2 = np.copy(polja1)
                 polja2[y][i] = crvena 
                 poslednjiPotez1 = (y, i)
-                newScore = minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
-                if newScore > score:
-                    najboljiPotez = (y, i)
+                newScore = -nadjiScore(poslednjiPotez1, polja2)
+                newScore -= minimax(polja2, depth-1, not isMaximizing, poslednjiPotez1)[0] 
+                if newScore < score:
+                    najboljiPotez = poslednjiPotez1
                     score = newScore     
-
-                    if score >= 100:
-                        najboljiPotezIScore = [score, najboljiPotez]
-                        return najboljiPotezIScore
-
+        
+        print(score)
         return [score, poslednjiPotez1]
+
 def nadjiScore(poslednjiPotez, polja):
     # global poslednjiPotez, polja, pobedioJe
     global pobedioJe
@@ -311,7 +313,7 @@ def nadjiScore(poslednjiPotez, polja):
     #     pobedioJe = boja
     #     return True    
     score += brojIstihKriterijum(brojIstih)  
-    if score >= 100:
+    if score >= 1000:
         pobedioJe = boja
     return score    
 
@@ -330,10 +332,10 @@ def brojIstihKriterijum(brojIstih):
         1: 1,
         2: 2,
         3: 5,
-        4: 100
+        4: 1000
     }
 
-    return switch.get(brojIstih, 100)
+    return switch.get(brojIstih, 1000)
 
 def nadjiSlobodnoY (x, polja):
     for i in range(5, -1, -1):
