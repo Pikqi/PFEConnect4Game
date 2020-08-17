@@ -191,7 +191,7 @@ def minimax1(polja1, depth, isMaximizing, poslednjiPotez):
     if isMaximizing:
         krajnjiScore = -krajnjiScore    
     if not slobodniPotezi or abs(krajnjiScore) >= 900 or depth == 0:
-        return  krajnjiScore
+        return  krajnjiScore * (depth+1)
 
     
     if isMaximizing:
